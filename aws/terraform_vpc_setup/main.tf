@@ -92,6 +92,13 @@ resource "aws_route_table_association" "public_routes" {
 }
 
 # Start Building EKS cluster
- module "eks_cluster_module" {
-    source = "../terraform_eks"
+# module "eks_cluster_module" {
+#    source = "../terraform_eks"
+#}
+
+module "ec2_module" {
+    source = "../terraform_ec2"
+    subnet_id = aws_subnet.private_aws_subnet[0].id
+    vpcid = aws_vpc.aws_vpc.id
+  
 }

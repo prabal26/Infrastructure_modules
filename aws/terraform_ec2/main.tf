@@ -1,7 +1,3 @@
-resource "aws_vpc" "aws_vpc" {
-  cidr_block = var.vpc_cidr
-}
-
 // TLS private key creation
 
 resource "tls_private_key" "ec2_private_key" {
@@ -22,9 +18,10 @@ resource "local_file" "ec2_key_file" {
 
 //Create EC2 Instance
 resource "aws_instance" "myec2vm" {
-#  count = 3
+  count = 2
   ami = data.aws_ami.amzlinux2.id 
   instance_type = var.instance_type
+  subnet_id = var.subnet_id
   vpc_security_group_ids = [aws_security_group.vpc-ssh.id, aws_security_group.vpc-web.id]  
   key_name = aws_key_pair.ec2_key.id
   tags = {
