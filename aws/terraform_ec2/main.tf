@@ -27,4 +27,14 @@ resource "aws_instance" "myec2vm" {
   tags = {
     "Name" = "EC2 Demo 2"
   }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum update -y",  # Update package index
+      "sudo yum install java-1.8.0-openjdk-devel -y",  # Install Java 8
+      "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",  # Add Jenkins repo
+      "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key",  # Import Jenkins key
+      "sudo yum install jenkins -y",  # Install Jenkins
+      "sudo systemctl start jenkins",  # Start Jenkins service
+      "sudo systemctl enable jenkins"  # Enable Jenkins service to start on boot
+    ]
 }
