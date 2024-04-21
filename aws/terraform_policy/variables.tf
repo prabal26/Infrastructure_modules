@@ -6,5 +6,6 @@ variable "resource_name" {
 }
 variable "policy_exists" {
    type = bool
+   default = false
   
 }

@@ -18,23 +18,39 @@ resource "local_file" "ec2_key_file" {
 
 //Create EC2 Instance
 resource "aws_instance" "myec2vm" {
-  count = 2
-  ami = data.aws_ami.amzlinux2.id 
-  instance_type = var.instance_type
-  subnet_id = var.subnet_id
-  vpc_security_group_ids = [aws_security_group.vpc-ssh.id, aws_security_group.vpc-web.id]  
-  key_name = aws_key_pair.ec2_key.id
+  depends_on             = [local_file.ec2_key_file]
+  ami                    = data.aws_ami.amzlinux2.id
+  instance_type          = var.instance_type
+  subnet_id              = var.subnet_id
+  vpc_security_group_ids = [aws_security_group.vpc-ssh.id, aws_security_group.vpc-web.id]
+  key_name               = aws_key_pair.ec2_key.id
   tags = {
     "Name" = "EC2 Demo 2"
   }
+
+  
+  
+  provisioner "file" {
+    source      = "../terraform_ec2/install.sh"  # Specify the local path of the script
+    destination = "/tmp/install.sh"     # Specify the destination path on the instance
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"  # Specify the SSH user
+      private_key = file("../terraform_vpc_setup/${local_file.ec2_key_file.filename}")  # Specify the path to your SSH private key
+      host        = self.public_ip  # Specify the public IP address of the EC2 instance
+    }
+  }
   provisioner "remote-exec" {
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"  # Specify the SSH user
+      private_key = file("../terraform_vpc_setup/${local_file.ec2_key_file.filename}")  # Specify the path to your SSH private key
+      host        = self.public_ip  # Specify the public IP address of the EC2 instance
+    }
     inline = [
-      "sudo yum update -y",  # Update package index
-      "sudo yum install java-1.8.0-openjdk-devel -y",  # Install Java 8
-      "sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo",  # Add Jenkins repo
-      "sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key",  # Import Jenkins key
-      "sudo yum install jenkins -y",  # Install Jenkins
-      "sudo systemctl start jenkins",  # Start Jenkins service
-      "sudo systemctl enable jenkins"  # Enable Jenkins service to start on boot
+      "chmod +x /tmp/install.sh",  # Make the script executable
+      "/tmp/install.sh"            # Execute the script
     ]
+  }
 }

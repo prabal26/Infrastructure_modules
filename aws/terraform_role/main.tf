@@ -4,10 +4,7 @@ resource "aws_iam_role" "aws_iam_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "policy_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  count = var.num
+  policy_arn = var.permission_policy[count.index]
   role       = aws_iam_role.aws_iam_role.name
-}
-resource "aws_iam_role_policy_attachment" "kubernetes_service_policy_attachment" {
-  role       = aws_iam_role.aws_iam_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
 }
